@@ -1,0 +1,82 @@
+import { Chip } from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import classnames from "classnames";
+import { FC, memo, ReactElement } from "react";
+import {
+  ChipFieldProps,
+  Datagrid,
+  DateField,
+  ListProps,
+  NullableBooleanInput,
+  TextField,
+  TextInput,
+  useRecordContext,
+  useTranslate,
+} from "react-admin";
+import List from "../../components/auth/List";
+import ListActions from "../../components/ListActions";
+
+const useStyles = makeStyles(
+  {
+    chip: { margin: 4, cursor: "inherit" },
+  },
+  { name: "RaChipField" }
+);
+
+const RoleOptions: FC<ChipFieldProps> = memo<ChipFieldProps>((props) => {
+  const { className } = props;
+  const record = useRecordContext(props);
+  const classes = useStyles(props);
+  const translate = useTranslate();
+  return record ? (
+    <>
+      {record.is_default ? (
+        <Chip
+          key={record.id + "_default"}
+          className={classnames(classes.chip, className)}
+          label={translate("resources.roles.fields.is_default")}
+        />
+      ) : null}
+      {record.is_static ? (
+        <Chip
+          key={record.id + "_static"}
+          color="primary"
+          className={classnames(classes.chip, className)}
+          label={translate("resources.roles.fields.is_static")}
+        />
+      ) : null}
+    </>
+  ) : null;
+});
+
+const roleFilters = [
+  <TextInput label="Search" source="q=name:like,slug:like" alwaysOn />,
+  <NullableBooleanInput label="Default" source="is_default" />,
+];
+
+const RoleList = (props: ListProps): ReactElement => {
+  const translate = useTranslate();
+
+  return (
+    <List
+      {...props}
+      actions={<ListActions />}
+      filters={roleFilters}
+      filter={{ selects: "id,slug,name,is_default,is_static, created_at" }}
+    >
+      <Datagrid optimized rowClick="edit">
+        <TextField source="slug" />
+        <TextField source="name" />
+        <RoleOptions />
+        <DateField
+          source="created_at"
+          locales="us-US"
+          showTime={true}
+          label={translate("rin.model.created_at")}
+        />
+      </Datagrid>
+    </List>
+  );
+};
+
+export default RoleList;
